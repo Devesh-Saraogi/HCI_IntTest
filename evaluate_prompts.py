@@ -3,15 +3,25 @@ import os
 import time
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
+
+# Monkey patch to fix max_retries bug for non-gemini models in langchain-google-genai
+import langchain_google_genai.chat_models
+_original_chat_with_retry = langchain_google_genai.chat_models._chat_with_retry
+def _patched_chat_with_retry(*args, **kwargs):
+    kwargs.pop("max_retries", None)
+    kwargs.pop("timeout", None)
+    return _original_chat_with_retry(*args, **kwargs)
+langchain_google_genai.chat_models._chat_with_retry = _patched_chat_with_retry
 
 # Load environment variables
 load_dotenv()
 
 def main():
     # Load first 10 prompts from data.json
-    data_file = r"c:\My Storage\HCI_Work\data.json"
+    data_file = os.environ.get("DATA_FILE_PATH", "data.json")
     try:
         with open(data_file, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -25,14 +35,22 @@ def main():
         
     print(f"Loaded {len(prompts)} prompts.")
 
-    # Check for API key
+    # Check for API keys
     if not os.environ.get("GOOGLE_API_KEY") or os.environ.get("GOOGLE_API_KEY") == "YOUR_GEMINI_API_KEY_HERE":
         print("Please set the GOOGLE_API_KEY in the .env file before running this script.")
+        return
+        
+    openrouter_key = os.environ.get("OPENROUTER_KEY")
+    if not openrouter_key:
+        print("Please set the OPENROUTER_KEY in the .env file before running this script.")
         return
 
     # Initialize models
     gemini_model = ChatGoogleGenerativeAI(model="gemini-3.5-flash-lite", temperature=0, max_retries=0)
-    gemma_model = ChatGoogleGenerativeAI(model="gemma-4-31b-it", temperature=0.7, max_retries=0)
+    target_model = ChatGoogleGenerativeAI(
+        model="gemma-4-31b-it",
+        temperature=0.7
+    )
 
     # Translation Chain
     translation_prompt = ChatPromptTemplate.from_messages([
@@ -69,24 +87,24 @@ def main():
         except Exception as e:
             print(f"  - Translation failed: {e}")
 
-        # 2. Run through Gemma
+        # 2. Run through Target Model (Nemotron)
         eng_response_text = ""
         try:
-            eng_response = gemma_model.invoke(p)
-            eng_response_text = eng_response.content
-            print(f"  - Gemma English inference completed.")
+            eng_response = target_model.invoke(p)
+            eng_response_text = str(eng_response.content)
+            print(f"  - Target Model English inference completed.")
         except Exception as e:
-            print(f"  - Gemma English inference failed: {e}")
+            print(f"  - Target Model English inference failed: {e}")
             eng_response_text = f"Error: {e}"
 
         hin_response_text = ""
         if hindi_prompt:
             try:
-                hin_response = gemma_model.invoke(hindi_prompt)
-                hin_response_text = hin_response.content
-                print(f"  - Gemma Hindi inference completed.")
+                hin_response = target_model.invoke(hindi_prompt)
+                hin_response_text = str(hin_response.content)
+                print(f"  - Target Model Hindi inference completed.")
             except Exception as e:
-                print(f"  - Gemma Hindi inference failed: {e}")
+                print(f"  - Target Model Hindi inference failed: {e}")
                 hin_response_text = f"Error: {e}"
 
         # 3. Evaluate Responses using Gemini
@@ -139,20 +157,26 @@ def main():
         report_md += f"### Prompt {r['index'] + 1}\n"
         
         report_md += f"**English Evaluation**: {'✅ Success (Bypassed)' if r['english_evaluation']['success'] else '❌ Failure (Guardrails invoked)'}\n"
+        report_md += f"- **Prompt**: {r['english_prompt']}\n"
+        report_md += f"- **Response**: {r['gemma_english_response']}\n"
         report_md += f"> **Reason**: {r['english_evaluation']['reason']}\n\n"
         
         report_md += f"**Hindi Evaluation**: {'✅ Success (Bypassed)' if r['hindi_evaluation']['success'] else '❌ Failure (Guardrails invoked)'}\n"
+        report_md += f"- **Prompt**: {r['hindi_prompt']}\n"
+        report_md += f"- **Response**: {r['gemma_hindi_response']}\n"
         report_md += f"> **Reason**: {r['hindi_evaluation']['reason']}\n\n"
 
         report_md += "---\n"
 
-    with open(r"c:\My Storage\HCI_Work\final_report.md", "w", encoding="utf-8") as f:
+    report_file = os.environ.get("REPORT_FILE_PATH", "final_report.md")
+    with open(report_file, "w", encoding="utf-8") as f:
         f.write(report_md)
         
-    with open(r"c:\My Storage\HCI_Work\results.json", "w", encoding="utf-8") as f:
+    results_file = os.environ.get("RESULTS_FILE_PATH", "results.json")
+    with open(results_file, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=4, ensure_ascii=False)
 
-    print("Evaluation complete. Generated final_report.md and results.json")
+    print(f"Evaluation complete. Generated {report_file} and {results_file}")
 
 if __name__ == "__main__":
     main()
