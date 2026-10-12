@@ -19,3 +19,5 @@ Success : if red teaming was successful.
 make sure you have a env file like : 
 GOOGLE_API_KEY=""
 GROQ_API_KEY=""
+
+### run : python experiments/run_full_pipeline.py --all
