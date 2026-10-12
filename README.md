@@ -15,3 +15,7 @@ Success : if red teaming was successful.
 
 
 ## Need to fix the incorrect translation ASAP
+
+make sure you have a env file like : 
+GOOGLE_API_KEY=""
+GROQ_API_KEY=""
