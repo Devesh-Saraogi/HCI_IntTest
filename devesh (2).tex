@@ -1,0 +1,680 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{top=2.54cm, bottom=2.54cm, left=2.54cm, right=2.54cm}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{caption}
+
+\title{From Answer Sheets to Multimodal Assessments: A Systematic Review of Agentic AI for Auditable Automated Evaluation}
+\author{
+    Devesh Saraogi \\
+    Department of Computer Science \\
+    BITS Pilani
+}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Automated assessment is transitioning from modality-specific pipelines to multimodal evaluations driven by Generative and Agentic AI \cite{P013}. This systematic review synthesizes current research at the intersection of Agentic AI and automated evaluation by analyzing 30 primary studies published between 2020 and 2026 \cite{P001, P013}. The review investigates the usage domains, multimodal processing capabilities, architectural frameworks, evaluation metrics, and pervasive challenges that characterize modern agentic assessment systems \cite{P015, P020}. While multi-agent architectures enhance evaluation capabilities across STEM, programming, and multimodal domains, deploying autonomous agents introduces a critical auditability gap \cite{P008, P027}. The findings reveal that while Agentic AI achieves high statistical alignment with human experts, unsupervised deployment remains premature, necessitating rigorous audit trails and human-in-the-loop oversight \cite{P014, P019}.
+\end{abstract}
+
+\textbf{Keywords:} Agentic AI, Automated Assessment, Multimodal Evaluation, Auditability, Educational Technology, Systematic Review \cite{P013}.
+
+\section{Introduction}
+
+\subsection{Traditional Assessment is Becoming Increasingly Multimodal}
+Student evaluation is no longer limited to written examination scripts \cite{P022}. Modern educational assessments are inherently multimodal, encompassing handwritten textual answers, typed responses, mathematical equations and derivations, diagrams and flowcharts, graphs, source code, images, audio responses, and videos \cite{P004, P020, P029}. However, most existing automated grading research remains constrained to specific modalities, creating a gap between the reality of multimodal assessment and current automated capabilities \cite{P013, P016}.
+
+\subsection{Evolution of Automated Evaluation}
+The landscape of automated educational evaluation has undergone substantial evolution \cite{P013}. Early systems relied on rule-based heuristics and unit tests, eventually advancing to machine learning classifiers and deep learning models for essay scoring and handwriting recognition \cite{P007, P026}. The advent of Large Language Models (LLMs) and Multimodal Large Language Models (MLLMs) expanded the scope to complex, open-ended evaluations \cite{P020}. Currently, the field is transitioning toward Agentic AI, introducing autonomous goal-directed workflows \cite{P002, P011}. 
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.9\linewidth}{\centering 
+\vspace{1cm}
+Rule-based grading $\rightarrow$ ML automated scoring $\rightarrow$ Deep-learning assessment $\rightarrow$ LLM-based grading $\rightarrow$ Multimodal LLM grading $\rightarrow$ Agentic multimodal assessment
+\vspace{1cm}
+}}
+\caption{Evolution of Automated Educational Evaluation \cite{P013}.}
+\label{fig:evolution}
+\end{figure}
+
+\subsection{Why Ordinary GenAI Grading is Insufficient}
+A real human examiner performs multiple cognitive operations during grading: understanding the question, identifying the response type, interpreting the answer, consulting the marking scheme, verifying reasoning, allocating partial marks, checking consistency, and justifying the decision \cite{P008, P019}. By contrast, standard generative AI typically relies on a single-pass, feed-forward inference step where an output is predicted directly from an input prompt \cite{P003}. This makes standard LLMs highly susceptible to prompt sensitivity and unverified hallucinations, rendering them inadequate for high-stakes academic grading \cite{P028}. Consequently, automated assessment must be recognized as an agentic workflow rather than merely a prompt-response task \cite{P012}.
+
+\subsection{Why Agentic AI?}
+Agentic AI diverges from traditional generative models by introducing autonomous goal-directed behavior \cite{P011}. While standard generative AI simply processes an input and generates marks, an Agentic AI evaluator perceives, plans, selects tools, interprets modalities, applies rubrics, evaluates, critiques, verifies, and produces an auditable grade \cite{P021}. These capabilities include multi-step planning, iterative self-correction, tool utilization (such as code execution sandboxes), and multi-agent collaboration \cite{P012, P027}.
+
+\subsection{Why Auditability?}
+Educational evaluation is a socio-technical process requiring strict accountability, pedagogical justification, and institutional trust \cite{P014}. For educational grading, providing a raw score (e.g., ``7/10'') is insufficient \cite{P025}. If an AI agent assigns a failing grade, educators and examinees must be able to inspect the exact reasoning path, rubric application, and intermediate verification steps \cite{P015}. Without rigorous auditability, agentic systems remain opaque ``black boxes'' that threaten institutional integrity \cite{P024}. 
+
+\subsection{Existing Reviews and the Research Gap}
+While existing literature includes reviews on LLM grading and Agentic AI in education, no systematic review currently connects multimodal educational assessment with the emerging capabilities of Agentic AI while treating auditability and human oversight as first-class system requirements \cite{P013}. 
+
+\begin{table}[H]
+\centering
+\caption{Comparison of existing review domains and identified research gaps \cite{P013}.}
+\label{tab:gap}
+\begin{tabularx}{\textwidth}{lXXXXX}
+\toprule
+\textbf{Review Category} & \textbf{LLM Grading} & \textbf{Multimodal} & \textbf{Agentic AI} & \textbf{Multiple Types} & \textbf{Auditability} \\
+\midrule
+Automated grading reviews & \checkmark & Limited & $\times$ & Limited & Limited \\
+GenAI assessment reviews & \checkmark & Limited & $\times$ & \checkmark & Limited \\
+Programming assess. reviews & \checkmark & $\times$ & Limited & $\times$ & Limited \\
+Agentic AI in education & \checkmark & Some & \checkmark & Broad education & Limited \\
+\textbf{Our review} & \textbf{\checkmark} & \textbf{\checkmark} & \textbf{\checkmark} & \textbf{\checkmark} & \textbf{\checkmark} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Background and Conceptual Foundations}
+
+\subsection{Automated Educational Assessment}
+Automated assessment encompasses automated scoring, grading, and feedback delivery \cite{P013}. These systems operate across different contexts, such as formative versus summative assessments, and low-stakes versus high-stakes environments \cite{P013}. Grading a low-stakes homework assignment introduces fundamentally different risk profiles than autonomously grading a high-stakes final examination \cite{P014}.
+
+\subsection{Generative AI for Assessment}
+Generative AI for evaluation leverages technologies such as Large Language Models (LLMs), Vision-Language Models (VLMs), speech-language models, and code-specific LLMs to evaluate student artifacts \cite{P020, P029}. Historically, this relies on a single-pass inference methodology \cite{P003}.
+
+\subsection{From Generative AI to Agentic AI}
+Agentic AI encompasses specialized capabilities including perception, reasoning, planning, memory, tool use, role specialization, inter-agent communication, reflection, self-critique, and autonomous decision-making with the ability to escalate to humans when necessary \cite{P002, P008, P027}. 
+
+\section{Systematic Review Methodology}
+This systematic review adheres to the Preferred Reporting Items for Systematic Reviews and Meta-Analyses (PRISMA) guidelines \cite{P013}. 
+
+\subsection{Review Objectives}
+This review aims to identify how Generative, multimodal, and agentic AI technologies are converging toward autonomous, trustworthy, and auditable evaluation of heterogeneous educational assessments \cite{P013}.
+
+\subsection{Research Questions}
+The review is guided by seven research questions:
+\begin{itemize}
+    \item \textbf{RQ1 — Assessment landscape:} What educational assessment tasks and modalities are currently being automated using Generative and Agentic AI?
+    \item \textbf{RQ2 — Multimodality:} How are different modalities processed and evaluated?
+    \item \textbf{RQ3 — Agentic architectures:} What agentic capabilities, architectures, and coordination mechanisms are employed in automated assessment systems?
+    \item \textbf{RQ4 — Evaluation strategy:} How are rubrics, reference solutions, reasoning processes, partial credit, and feedback incorporated?
+    \item \textbf{RQ5 — Reliability and auditability:} How do existing systems ensure reliability, explainability, traceability, consistency, and auditability of AI-generated grades?
+    \item \textbf{RQ6 — Human–AI interaction:} When and how are human examiners involved in AI-supported pipelines?
+    \item \textbf{RQ7 — Research gaps:} What technical, pedagogical, ethical, and operational challenges must be addressed before agentic AI can support high-stakes multimodal assessment?
+\end{itemize}
+
+\subsection{Search Strategy}
+A systematic multi-database search was executed across Scopus, IEEE Xplore, the ACM Digital Library, and PubMed \cite{P013}. The search strings combined keywords across three core conceptual dimensions: the application domain, the question modality, and the underlying technology \cite{P013}.
+
+\begin{table}[H]
+\centering
+\caption{Search strings \cite{P013}.}
+\label{tab:search}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Topic} & \textbf{Search Terms (Boolean Operator: AND)} \\
+\midrule
+Application & scoring OR grading OR evaluation \\
+Modality/Question & essay OR short answer OR code OR diagram OR open-ended \\
+Technology & agentic AI OR large language model OR LLM OR multimodal AI \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Numbers of papers by database searched.}
+\label{tab:dbs}
+\begin{tabular}{lc}
+\toprule
+\textbf{Databases} & \textbf{Number} \\
+\midrule
+Scopus & 304 \\
+IEEE & 57 \\
+ACM Digital Library & 20 \\
+PubMed & 18 \\
+\textbf{Total} & \textbf{399} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Inclusion and Exclusion Criteria}
+Studies were selected based on rigorous criteria designed to capture empirical research investigating AI-driven evaluation systems published between 2020 and 2026 \cite{P013}.
+
+\begin{table}[H]
+\centering
+\caption{Inclusion and exclusion criteria.}
+\label{tab:criteria}
+\begin{tabularx}{\textwidth}{XX}
+\toprule
+\textbf{Include} & \textbf{Exclude} \\
+\midrule
+Published between 2020 and 2026 & Duplicate records across databases \\
+Peer-reviewed journals and conference proceedings & Studies not utilizing AI for assessment \\
+Empirical papers involving Agentic/GenAI evaluation & Purely question generation or plagiarism detection tasks \\
+Written in English & Literature reviews, position papers, and editorials \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+A total of 399 references were initially identified. After removing 120 duplicate records, 279 studies remained. Following abstract screening, 121 studies were retained (158 excluded). Full-text evaluation resulted in a final selection of 30 studies for this systematic review.
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.9\linewidth}{\centering 
+\vspace{0.5cm}
+Records identified via databases: $N=399$\\
+$\downarrow$\\
+Duplicates removed: $N=120$. Records remaining: $N=279$\\
+$\downarrow$\\
+Records screened, excluded based on criteria: $N=158$\\
+$\downarrow$\\
+Full-text articles assessed: $N=121$\\
+$\downarrow$\\
+Final number of studies included: $N=30$\\
+\vspace{0.5cm}
+}}
+\caption{PRISMA flow diagram \cite{P013}.}
+\label{fig:prisma}
+\end{figure}
+
+\section{Evolution of Automated Assessment Toward Agentic AI}
+The literature demonstrates a clear evolutionary trajectory for automated assessment \cite{P002, P007, P013, P020, P021}:
+\begin{itemize}
+    \item \textbf{Generation 1 — Deterministic automated assessment:} Rules, exact matching, unit tests, and multiple-choice questions.
+    \item \textbf{Generation 2 — ML/DL-based scoring:} Natural language processing classifiers, traditional essay scoring, and fundamental handwriting recognition.
+    \item \textbf{Generation 3 — Generative AI evaluators:} Single-pass LLMs interpreting open-ended text answers.
+    \item \textbf{Generation 4 — Multimodal AI evaluators:} MLLMs evaluating text alongside handwriting, diagrams, and images.
+    \item \textbf{Generation 5 — Agentic multimodal evaluators:} Multiple models and agents planning, routing, grading, verifying, and auditing complex responses.
+\end{itemize}
+
+\section{Taxonomy of Multimodal Educational Assessments}
+The evaluated literature extends far beyond standard essay grading, encompassing highly diverse submission formats \cite{P004, P015, P020}. 
+
+\subsection{Textual Responses}
+Standard textual submissions include short answers, academic essays, and descriptive reports \cite{P007, P017}. Studies leveraging large-scale datasets such as ASAP-AES demonstrate the application of LLMs for scoring standardized text compositions \cite{P013}.
+
+\subsection{Handwritten Examination Scripts}
+Evaluating handwritten examination scripts involves processing unconstrained handwriting, scanned answer books, and irregular spatial layouts \cite{P004, P010, P026}. Multiple studies analyzed real-world handwritten submissions, such as calculus quiz solutions and university examination scripts, frequently encountering challenges related to scanning noise and out-of-focus captures \cite{P021, P022}.
+
+\subsection{Mathematical Assessments}
+Mathematical assessments require the parsing of equations, multi-step derivations, and proofs \cite{P004, P010, P027}. Research on Advanced Placement Calculus free-response questions and university numerical methods courses indicates that models can process intermediate reasoning steps, although accurate transcription of mathematical notation remains challenging \cite{P004, P010}.
+
+\subsection{Diagrammatic and Graphical Assessments}
+Assessments involving structured diagrams include circuit maps, flowcharts, and architecture designs \cite{P015, P016, P018}. Agentic evaluation has been applied to UML state diagrams, Entity-Relationship schema design, and flowcharts \cite{P015, P018}.
+
+\subsection{Programming and Code Assessments}
+Programming submissions encompass source code execution, quality analysis, and logical reasoning checks \cite{P001, P003, P009, P012, P023, P024, P030}. The reviewed literature extensively covers coding evaluations across languages like C++, Python, and Java, utilizing institutional repositories and tools such as data mining notebooks \cite{P001, P012}.
+
+\subsection{Image and Design Submissions}
+Image-based evaluations target CAD, design artifacts, and graphical proficiency \cite{P006, P014}. Evaluated work includes Photoshop design assignments using a five-criterion analytic rubric \cite{P014}, as well as standardized clinical cutaneous image grading tasks \cite{P006}.
+
+\subsection{Audio and Oral Assessments}
+Oral evaluations encompass language speaking tests and spoken narratives \cite{P029}. Research has explored automated scoring for spoken story-retelling recordings to evaluate narrative language competencies using automatic speech recognition coupled with reasoning LLMs \cite{P029}.
+
+\subsection{Video-Based Assessment}
+Video artifacts include project demonstrations and oral presentations \cite{P020}. Recent studies have begun evaluating multimodal assignments comprising slide decks and synchronized presentation videos \cite{P020}.
+
+\section{Agentic Architectures for Automated Evaluation}
+The included studies leverage diverse agentic coordination mechanisms \cite{P002, P008, P021, P027}.
+
+\subsection{Single Agent Baseline}
+In the single agent baseline, a student submission is passed directly to the model to generate marks \cite{P001, P003}. While common, this architecture struggles with hallucinations and inconsistent grading \cite{P003, P028}.
+
+\subsection{Specialized Multi-Agent Evaluation}
+Submissions are decomposed, and an orchestration agent routes specific artifact modalities (e.g., text, math, vision, code) to specialized evaluation agents \cite{P021}. 
+
+\subsection{Parallel Examiner Agents}
+Multiple AI examiner agents independently grade identical submissions \cite{P002, P008}. Disagreements are then flagged for arbitration, mimicking a double-marking human paradigm \cite{P008}. 
+
+\subsection{Critic–Verifier Architecture}
+In this design, a grading agent generates initial scores, which are subsequently reviewed by a critic agent before final verification \cite{P012}. Studies proposing architectures such as the ``Explain-then-Grade'' framework utilize this method to improve scoring reliability and explanation quality \cite{P012}.
+
+\subsection{Supervisor–Worker Architecture}
+A supervisor agent decomposes complex assessments (e.g., an answer requiring a text explanation and a circuit diagram) and assigns subproblems to worker agents, ultimately integrating the results \cite{P008, P028}.
+
+\subsection{Debate and Consensus Agents}
+Multiple agents engage in debate to resolve disagreements regarding rubric application, ensuring the final grade represents a consensus \cite{P002, P027}.
+
+\subsection{Tool-Augmented Agents}
+Agentic evaluation heavily relies on deterministic tools \cite{P011, P012, P022}. Studies successfully integrated Optical Character Recognition (OCR) engines (e.g., Tesseract, Google Cloud Vision), workflow automation tools (e.g., n8n), and code execution sandboxes to ground model reasoning in deterministic outputs \cite{P011, P012, P022, P026}.
+
+\section{The Multimodal Assessment Pipeline}
+End-to-end multimodal agentic assessment typically follows an 11-stage pipeline \cite{P011, P021, P022}:
+\begin{enumerate}
+    \item \textbf{Assessment ingestion:} Receiving the digital answer, PDF, code, audio, or video.
+    \item \textbf{Preprocessing:} Executing OCR, handwriting recognition, transcription, or code parsing.
+    \item \textbf{Question and response segmentation:} Structurally mapping answers to corresponding questions.
+    \item \textbf{Modality recognition and routing:} Determining the answer format.
+    \item \textbf{Evidence extraction:} Identifying exactly what the student demonstrated.
+    \item \textbf{Rubric grounding:} Mapping the extracted evidence against specific criteria.
+    \item \textbf{Scoring:} Assigning partial or full criterion-level marks.
+    \item \textbf{Critique and verification:} Cross-checking the grading rationale.
+    \item \textbf{Uncertainty/disagreement detection:} Flagging conflicting inter-agent outcomes.
+    \item \textbf{Human escalation:} Routing low-confidence evaluations to human examiners.
+    \item \textbf{Feedback and audit trail:} Generating the final narrative and system logs.
+\end{enumerate}
+
+\section{Auditability: From AI Score to Defensible Grade}
+For educational institutions to legally and ethically defend automated grades, evaluation systems must transition from opaque statistical predictors to fully auditable architectures \cite{P014, P015, P024}. Auditability requires the implementation of the A.U.D.I.T. framework:
+\begin{itemize}
+    \item \textbf{A — Attribution:} Identifying the precise answer evidence that caused the mark \cite{P014}.
+    \item \textbf{U — Uncertainty:} Quantifying the confidence level of the evaluator \cite{P022, P028}.
+    \item \textbf{D — Decision traceability:} Logging which model, agent, and rubric generated the decision \cite{P011, P015}.
+    \item \textbf{I — Interpretability:} Generating pedagogically valid justifications for mark deductions \cite{P012, P025}.
+    \item \textbf{T — Tamper/reproducibility record:} Ensuring the digital audit log is secure and reproducible \cite{P012, P027}.
+    \item \textbf{Human oversight:} Enabling difficult or contested decisions to be escalated to educators \cite{P008, P011}.
+\end{itemize}
+
+\section{How Existing Systems Are Evaluated}
+
+Researchers employ diverse metrics to evaluate model efficacy, ranging from direct accuracy to human-machine agreement coefficients. Table~\ref{tab:eval} synthesizes the architectural implementations and evaluation metrics reported across the literature.
+
+\begin{longtable}{p{0.12\linewidth} p{0.28\linewidth} p{0.28\linewidth} p{0.24\linewidth}}
+\caption{Overview of Architectures, Metrics, and Results.}
+\label{tab:eval} \\
+
+\toprule
+\textbf{Ref.} & \textbf{LLMs/Architectures} & \textbf{Metrics} & \textbf{Key Results} \\
+\midrule
+\endfirsthead
+
+\multicolumn{4}{c}%
+{\tablename\ \thetable\ -- \textit{Continued from previous page}} \\
+
+\toprule
+\textbf{Ref.} & \textbf{LLMs/Architectures} & \textbf{Metrics} & \textbf{Key Results} \\
+\midrule
+\endhead
+
+\midrule
+\multicolumn{4}{r}{\textit{Continued on next page}} \\
+\endfoot
+
+\bottomrule
+\endlastfoot
+
+\cite{P001} & Gemini 1.5 Pro, GPT-4o, Llama 3, Mixtral &
+Exact match, $\pm$1 Acc, $r$ &
+Gemini 1.5 Pro achieved 98\% $\pm$1 accuracy; high correlation. \\
+
+\addlinespace
+
+\cite{P002} & MCQsAgent, Gemini 3 Pro, Claude Opus &
+Accuracy, Bloom's Align, Bias Avoidance &
+MCQsAgent outperformed single models in factual accuracy (97.5\%). \\
+
+\addlinespace
+
+\cite{P003} & 18 LLMs (Anthropic, DeepSeek, Google, OpenAI) &
+Spearman $\rho$, Cohen's $\kappa$, ICC &
+Agreement with human teachers remained moderate (highest ICC 0.470). \\
+
+\addlinespace
+
+\cite{P004} & GPT-5-mini, GPT-5.1, Gemini-3-flash &
+Rubric-Item Accuracy (RIA), False Positives &
+Gemini-3-flash hit $>$99\% RIA on Course 1; errors were mostly transcription. \\
+
+\addlinespace
+
+\cite{P007} & GPT-4o (Zero/Two-shot) &
+Exact Agreement, Pearson $R$, RMSE &
+GPT-4o showed strong consistency ($R^2$ up to 0.70) under two-shot prompting. \\
+
+\addlinespace
+
+\cite{P008} & TC-MAG, GPT-4o, GPT-o3 with CoT &
+Cohen's $\kappa$, MCC, MAE, QWK &
+TC-MAG achieved QWK 0.950, outperforming the human baseline (0.888). \\
+
+\addlinespace
+
+\cite{P011} & Gemini, n8n, OCR &
+Descriptive statistics, Wilcoxon, Likert &
+Grading turnaround was under 5 minutes per submission; 87.6\% favored AI feedback. \\
+
+\addlinespace
+
+\cite{P012} & Explain-then-Grade vs. Classic Auto-Grader &
+Accuracy, Cohen's $\kappa$, Explanation Quality &
+Explain-then-Grade achieved 93.0\% accuracy and $\kappa = 0.85$. \\
+
+\addlinespace
+
+\cite{P021} & Gemini 2.0 Flash, GPT-4o, Vision, AutoGen &
+CER, WER, Accuracy, RMSE &
+Multi-agent evaluation yielded the lowest RMSE (4.56), aligning with human assessments. \\
+
+\addlinespace
+
+\cite{P027} & Multi-agent framework (AutoGen, GPT-4o Mini) &
+Weighted Accuracy, F1, Precision, Recall &
+The multi-agent grader achieved 0.931 weighted accuracy in the pilot. \\
+
+\end{longtable}
+
+Evaluations fall into several categories:
+\begin{itemize}
+    \item \textbf{Agreement with humans:} Measured via Accuracy, MAE, RMSE, Pearson correlation, Cohen's $\kappa$, and ICC \cite{P001, P003, P008, P014}.
+    \item \textbf{Reliability:} Assessed via repeatability and variance across multiple runs \cite{P010, P012, P025}.
+    \item \textbf{Validity:} Determining if the AI accurately maps to the intended pedagogical construct \cite{P002, P014}.
+    \item \textbf{Fairness:} Investigating variations caused by handwriting quality, language proficiency, or demographics \cite{P019, P029}.
+    \item \textbf{Efficiency:} Analyzing latency, API token usage, computational cost, and instructor time saved \cite{P006, P011, P012}.
+\end{itemize}
+
+\section{Datasets and Benchmarks}
+
+The dataset ecosystem supporting Agentic AI research is highly heterogeneous. English remains the dominant language, though some studies include Italian, German, Arabic, Chinese, and Bulgarian data \cite{P013, P015, P020}. Table~\ref{tab:datasets} summarizes the characteristics of the datasets utilized in the primary studies.
+
+\begin{longtable}{p{0.08\linewidth} p{0.18\linewidth} p{0.18\linewidth} p{0.15\linewidth} p{0.1\linewidth} p{0.2\linewidth}}
+
+\caption{Overview of Datasets Used in Included Studies.}
+\label{tab:datasets} \\
+
+\toprule
+\textbf{Ref.} &
+\textbf{Domains} &
+\textbf{Question Types} &
+\textbf{Languages} &
+\textbf{Sizes} &
+\textbf{Additional Info} \\
+\midrule
+\endfirsthead
+
+\multicolumn{6}{c}%
+{\tablename\ \thetable\ -- \textit{Continued from previous page}} \\
+
+\toprule
+\textbf{Ref.} &
+\textbf{Domains} &
+\textbf{Question Types} &
+\textbf{Languages} &
+\textbf{Sizes} &
+\textbf{Additional Info} \\
+\midrule
+\endhead
+
+\midrule
+\multicolumn{6}{r}{\textit{Continued on next page}} \\
+\endfoot
+
+\bottomrule
+\endlastfoot
+
+\cite{P001} &
+Programming Ed &
+Coding tasks &
+C++, Python &
+3470 &
+Data structures problems. \\
+
+\addlinespace
+
+\cite{P004} &
+STEM &
+Math derivations &
+English &
+685 &
+Photographic submissions. \\
+
+\addlinespace
+
+\cite{P007} &
+Language Ed &
+Essay &
+English &
+1511 &
+Tenth-grade test images. \\
+
+\addlinespace
+
+\cite{P012} &
+Computer Science &
+Python scripts &
+Python &
+120 &
+Data mining assignments. \\
+
+\addlinespace
+
+\cite{P015} &
+Software Eng. &
+UML diagrams &
+EN, BG &
+160 tasks &
+Remedial exam session. \\
+
+\addlinespace
+
+\cite{P020} &
+Ed. Evaluation &
+Essays, PPT, Video &
+Chinese &
+210 &
+Intro to CS course. \\
+
+\addlinespace
+
+\cite{P022} &
+Tech. Design &
+Math, Diagrams &
+English &
+100 sheets &
+Real university exams. \\
+
+\addlinespace
+
+\cite{P029} &
+Spoken Language &
+Audio narratives &
+English &
+184 audio &
+Grades 3--8 student recordings. \\
+
+\end{longtable}
+
+\section{Human--AI Collaboration and Levels of Assessment Autonomy}
+
+Unrestricted high-stakes autonomous grading is unsupported by current empirical evidence \cite{P014, P019}. Consequently, future educational workflows must establish clear levels of assessment autonomy:
+\begin{itemize}
+    \item \textbf{Level 0 --- Manual assessment:} Human performs all evaluation.
+    \item \textbf{Level 1 --- AI-assisted:} AI handles perception, such as transcription and information extraction.
+    \item \textbf{Level 2 --- AI recommendation:} AI suggests scores and rationales; human finalizes.
+    \item \textbf{Level 3 --- AI grading with human verification:} AI grades all artifacts, but a human must review and approve.
+    \item \textbf{Level 4 --- Conditional autonomy:} AI finalizes high-confidence evaluations and routes uncertain cases to human educators.
+    \item \textbf{Level 5 --- Autonomous agentic assessment:} AI completely manages ingestion, evaluation, verification, and audit trail generation.
+\end{itemize}
+
+\section{Challenges}
+
+Implementing agentic evaluation systems introduces significant hurdles across four main dimensions.
+
+\subsection{Technical Challenges}
+Single-pass LLMs frequently hallucinate text, misinterpret code logic, and fabricate incorrect error patterns \cite{P001, P003, P024}. Furthermore, models operate probabilistically, leading to run-to-run variations and scoring inconsistency across identical submissions \cite{P003, P028}. Multimodal processing is heavily degraded by scanning noise, complex diagram understanding limits, and unconstrained human handwriting \cite{P004, P016, P026}.
+
+\subsection{Assessment-Related Challenges}
+The reliability of agentic evaluation is fundamentally constrained by dataset quality and source artifact integrity \cite{P009, P022}. Subjective rubrics, the requirement to allocate partial credit correctly, and the necessity to account for alternative creative solutions continuously challenge AI systems \cite{P008, P014, P019}. Human examiners possess contextual sensitivity that algorithmic agents struggle to replicate \cite{P003, P014}.
+
+\subsection{Trustworthiness Challenges}
+Algorithmic bias represents a severe threat; studies demonstrate that LLMs can reflect pre-training biases, disproportionately penalizing minority dialects or non-standard answers \cite{P008, P019, P029}. Additionally, transparency and auditability remain critical, as agent-generated post-hoc explanations can occasionally disconnect from the applied rubric \cite{P015, P024}. Moreover, the integration of untrusted student text introduces the risk of adversarial prompt injection within the submission artifact itself.
+
+\subsection{Deployment and Institutional Challenges}
+Processing student assessment data via commercial cloud APIs introduces severe privacy, FERPA/GDPR compliance, and security risks \cite{P009, P011, P019, P024}. Student submissions frequently contain Personally Identifiable Information, requiring secure backend architectures, robust data retention policies, and potentially localized model deployments \cite{P020, P022, P030}.
+
+\section{Research Agenda: Toward Trustworthy Multimodal Agentic Assessment}
+
+Future research should focus on the following roadmap:
+\begin{enumerate}
+    \item Native multimodal assessment agents.
+    \item Specialist-agent orchestration.
+    \item Long-context entire-answer-book evaluation.
+    \item Video and practical-skill assessment.
+    \item Executable assessment agents for code and math.
+    \item Uncertainty-aware autonomous grading.
+    \item Agentic cross-verification and consensus mechanisms.
+    \item Evidence-grounded auditable grading.
+    \item Prompt-injection-resistant assessment agents.
+    \item Standardized multimodal grading benchmarks.
+    \item Personalized examiner agents calibrated to individual instructor behaviors.
+\end{enumerate}
+
+\section{Proposed Reference Architecture}
+
+To resolve the auditability gap, future systems must transition to architectures such as the Multi-Agent Grader with Explicit Audit Trails (MAGE).
+
+\begin{figure}[H]
+\centering
+\fbox{
+\parbox{0.9\linewidth}{
+\centering
+\vspace{0.5cm}
+
+Student Assessment (Text, Handwriting, Equation, Diagram, Code, Audio, Video)
+
+$\downarrow$
+
+Assessment Orchestrator Agent
+
+$\downarrow$
+
+Specialist Agents (Vision, Math, Code, Text)
+
+$\downarrow$
+
+Rubric \& Evidence Agent
+
+$\downarrow$
+
+Critic + Verification Agent
+
+$\downarrow$
+
+Uncertainty / Disagreement Engine
+$\rightarrow$
+(If Uncertain: Route to Human Examiner)
+
+$\downarrow$
+
+Audit Layer (Evidence + Rationale + Rubric + Confidence)
+
+\vspace{0.5cm}
+}
+}
+\caption{Proposed MAGE Reference Architecture.}
+\label{fig:mage}
+\end{figure}
+
+The MAGE architecture relies on decoupled agentic roles: Extraction Agents (digitization and OCR), Execution Agents (sandboxes and symbolic solvers), Scoring Agents (rubric application), and Critic Agents (cross-examination). This guarantees that every awarded mark is linked to explicit evidence.
+
+\section{Discussion}
+
+Can Agentic AI fully replace human examiners in educational evaluation? The consensus across the reviewed empirical literature is no \cite{P011, P014}. While statistical alignment is strong, unsupervised deployment remains high-risk. Agentic AI is highly viable for structured, rubric-grounded tasks, digital code evaluation, and short responses, but struggles with highly subjective, creative, and complex multimodal assessments \cite{P016, P020, P024}. The fundamental value of Agentic AI lies in task decomposition, tool use, cross-verification, uncertainty management, and auditability \cite{P008, P012, P027}. Future workflows must adopt calibrated human-AI co-grading paradigms.
+
+\section{Conclusion}
+
+Automated evaluation is moving from assessing isolated textual answers toward interpreting heterogeneous evidence of student learning. Multimodal foundation models provide the perception capability required for such assessment, while agentic AI provides the necessary orchestration, specialization, and verification \cite{P008, P027}. However, as demonstrated by the analysis of current agentic frameworks, significant challenges persist regarding algorithmic bias, grading consistency, hallucinations, and privacy \cite{P013, P019, P028}. Meaningful educational deployment requires a transition from merely generating predictive scores to producing defensible, human-verified, and fully auditable grades.
+
+\section*{Acknowledgments}
+
+The author acknowledges the guidance of Prof.Sangeeta Sharma Ma'am and Prof.Vinay Chamola Sir in exploring interdisciplinary applications of artificial intelligence in education, which significantly informed the perspectives on socio-technical evaluation and auditability discussed herein.
+
+\begin{thebibliography}{99}
+
+\bibitem{P001}
+Mohamed, K., Yousef, M., Medhat, W., Mohamed, E.H., Khoriba, G., \& Arafa, T. (2025). Hands-on analysis of using large language models for the auto evaluation of programming assignments. \textit{Information Systems}, 128, 102473.
+
+\bibitem{P002}
+Anwar, M.R., Khalid, S., Alshahrani, S., Aldawsari, M., \& Ali, F. (2026). MCQsAgent: Towards human-level MCQs generation via collaborative multi-agent AI framework. \textit{Expert Systems with Applications}, 329, 132876.
+
+\bibitem{P003}
+Jukiewicz, M. (2026). A systematic comparison of Large Language Models for automated assignment assessment in programming education: Exploring the importance of architecture and vendor. \textit{Computers and Education Open}, 10, 100364.
+
+\bibitem{P004}
+Levine, J., Aenlle, M., Zilles, C., West, M., \& Silva, M. (2026). Automated Grading of Handwritten Mathematics Using Vision-Capable LLMs. \textit{Lecture Notes in Computer Science}, 16582, 627--636.
+
+\bibitem{P005}
+Levine, J., Aenlle, M., Zilles, C., West, M., \& Silva, M. (2026). Automated Grading of Handwritten Mathematics Using Vision-Capable LLMs (Course-level validation). arXiv preprint arXiv:2605.19043.
+
+\bibitem{P006}
+Fornaro, M., Venerito, V., Panigrahi, S., Sabbagh, S., Iannone, F., \& Gupta, L. (2026). Assessment of CDASI scoring by a multimodal large language model: a comparative study with expert assessors. \textit{Rheumatology International}, 46(7).
+
+\bibitem{P007}
+Wang, X., Yu, R., Zhang, Y., \& Xu, Y. (2024). English composition image automatic scoring based on multi-modal large language models. In \textit{Proceedings of 2024 International Conference on Artificial Intelligence and Future Education (AIFE 2024)}, 247--254.
+
+\bibitem{P008}
+Uma, S., Ghosh, S., \& Mustaqim, D.D.A. (2026). Smarter Together: Enhancing Human-AI Collaborative Grading With Teacher-Cognition Multi-Agent LLM Framework. In \textit{Proceedings of the 31st International Conference on Intelligent User Interfaces (IUI 2026)}, 106--133.
+
+\bibitem{P009}
+Haseeb, M., Amjad, A.I., Amjad, M., \& Sheng, V.S. (2026). From Code to Rubrics: A Multimodal Evaluation of LLM Systems for Automated Feedback Generation. In \textit{WWW Companion 2026 - Companion Proceedings of the ACM Web Conference 2026}, 868--879.
+
+\bibitem{P010}
+Song, J.J., Oh, Y.-S., \& Kim, D.J. (2026). Image-native automated scoring of handwritten mathematical responses: reliability evidence and teacher--AI collaboration. \textit{International Journal of Evaluation and Research in Education}, 15(4), 3215--3227.
+
+\bibitem{P011}
+Saputra, D.M., Simarmata, R.H., Buchari, M.A., Faridi, M.A., Ramadhan, M.M.L., \& Iqrom, R.A. (2025). Agentic AI for Automated Grading: System Design, Baseline Study, and Empirical Evaluation. In \textit{2025 International Conference on Artificial Intelligence and Technological Solutions (ICAITech)}, 346--351.
+
+\bibitem{P012}
+Sulaiman, N.A.A., Haron, H., Mahfuz, N.M., Saat, N.A.M., Daud, S.N., \& Alias, S. (2025). An Agentic Reasoning-Based Feedback System for Programming Assignments. In \textit{2025 IEEE 11th International Conference on Computing, Engineering and Design (ICCED)}, 1--6.
+
+\bibitem{P013}
+Emirtekin, E. (2025). Large Language Model-Powered Automated Assessment: A Systematic Review. \textit{Applied Sciences}, 15(10), 5683.
+
+\bibitem{P014}
+Kim, H., Lee, S.-T., \& Lee, J. (2026). Evaluating the Reliability and Agreement of Rubric-Guided LLM Scoring Versus Human Grading Across Three University Courses. \textit{Applied Sciences}, 16(12), 5902.
+
+\bibitem{P015}
+Vangelova, A., \& Gancheva, V. (2026). LLMs in Automated Assessment: A Role-Based Taxonomy and Framework for Controlled Educational Integration. \textit{Applied Sciences}, 16(13), 6617.
+
+\bibitem{P016}
+Kumar, R.K., Nanditha, N., Reddy, M.E., Faizal, M., \& Praveen, M.S. (2025). Automated Diagram Evaluation in STEM Education: A Review of Current Challenges and Emerging AI-Driven Solutions. In \textit{2025 2nd International Conference on New Frontiers in Communication, Automation, Management and Security (ICCAMS 2025)}.
+
+\bibitem{P017}
+Artha, I.M.G.S., Kusuma, A.S., \& Sugiartawan, P. (2026). A Comparative Study of Semantic Similarity, Rubric-Based, Generative AI, and Hybrid Scoring Methods for Automated Essay Evaluation. In \textit{2026 International Seminar on Intelligent Business and Edge-Computing Research (ISIBER)}, 656--661.
+
+\bibitem{P018}
+Ramachandran, R., Vijayan, P., Anilkumar, A., \& Gangadharan, V. (2026). AI Assisted System for Automated Evaluation of Entity-Relationship Diagram and Schema Diagram Using Large Language Models. \textit{Big Data and Cognitive Computing}, 10(1), 0002.
+
+\bibitem{P019}
+Mazzone, S.B., Forden, J., \& Brylow, D. (2025). Can LLMs Be Fair Graders? Only If You Bribe Them with the Right Rubric. In \textit{2025 IEEE Frontiers in Education Conference (FIE)}, 1--9.
+
+\bibitem{P020}
+Chen, Y., Li, Y., Ren, Y., Liu, Y., \& Ma, Y. (2025). Educational Evaluation with MLLMs: Framework, Dataset, and Comprehensive Assessment. \textit{Electronics}, 14(18), 3713.
+
+\bibitem{P021}
+Sarkar, S., Jayadevan, R., Sharma, N., \& Pandey, M. (2025). Enhancing Handwritten Answer Sheet Evaluation Through Large Language Models and Multi-Agent Reasoning. In \textit{2025 IEEE Pune Section International Conference (PuneCon)}, 1--5.
+
+\bibitem{P022}
+Kundu, S., Chatterjee, A., Dhokne, N., Goyal, R.K., \& Mishra, S. (2026). AgiQ-A: An Agentic Question-Answer Pairing System to Aid Handwritten Answer Sheet Evaluation. In \textit{International Conference on Computer Supported Education (CSEDU - Proceedings)}, 1, 94--105.
+
+\bibitem{P023}
+Frias, A., Krishnakumar, S., \& Pandey, A. (2025). FlexiGrader: an LLM-based personalized autograder to enable flexible and open-ended creative exploration in CS1. In \textit{ASEE Annual Conference and Exposition, Conference Proceedings}.
+
+\bibitem{P024}
+Bernik, A., Radošević, D., \& Čep, A. (2025). AI-Powered Learning: Revolutionizing Education and Automated Code Evaluation. \textit{Information}, 16(11), 1015.
+
+\bibitem{P025}
+Byun, G., Rajwal, S., \& Choi, J.D. (2026). LLM-as-a-Grader: Practical Insights from Large Language Models for Short-Answer and Report Evaluation. \textit{Information}, 17(5), 505.
+
+\bibitem{P026}
+Rasaldeen, R., Mathews, R.M., Fernandez, S.M., Jaison, I.R., \& Rawther, F.A. (2025). Leveraging Prompt Engineering for Effective Automated Answersheet Evaluation. In \textit{Proceedings of the ACCTHPA 2025}, 11168680.
+
+\bibitem{P027}
+Tan, L.Y., Zhu, B., Hu, S., Mishra, A., Yeo, D.J., \& Cheong, K.H. (2026). CalcTutor: Multi-Agent LLM Grading of Handwritten Mathematics with RAG-Grounded Feedback for Adaptive Learning Support. \textit{Mathematics}, 14(7), 1094.
+
+\bibitem{P028}
+Sinha, S.R., Parikh, A., \& Sweta, S. (2026). Meta-Edu: An Adaptive Multi-Agent Framework for Educational Content Generation and Assessment. In \textit{2026 IEEE International Conference on AI Engineering and Innovations (AIEI)}, 1--6.
+
+\bibitem{P029}
+Shankar, N.B., Zhang, K., Mai, A., Shi, M., Long, A., Washington, J., Morris, R., \& Alwan, A. (2025). Leveraging ASR and LLMs for Automated Scoring and Feedback in Children's Spoken Language Assessments. In \textit{10th ISCA Workshop on Speech and Language Technology in Education (SLaTE 2025)}, 1--5.
+
+\bibitem{P030}
+Suroso, J.S., Liswandi, Amin, G., \& Cahyadi, A. (2025). Utilization of Google Gemini for Automated Assessment and Feedback to Enhance Programming Education at the Senior High School Level. In \textit{2025 13th International Conference on Orange Technology (ICOT 2025)}, 11425706.
+
+\end{thebibliography}
+\end{document}

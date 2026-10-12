@@ -1,0 +1,5 @@
+{
+    "model": "gemma-4-31b-it",
+    "audio_file": "experiments/tts.wav",
+    "response": "Error 400: {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"Audio input modality is not enabled for this model\",\n    \"status\": \"INVALID_ARGUMENT\"\n  }\n}\n"
+}
